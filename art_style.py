@@ -59,6 +59,8 @@ lasagne.layers.set_all_param_values(net['pool5'], values)
 
 MEAN_VALUES = np.array([104, 117, 123]).reshape((3,1,1))
 
+def read_images()
+
 # Prep an image to be fed into the network
 def prep_image(im):
     if len(im.shape) == 2:
@@ -90,9 +92,11 @@ print "Prepping images..."
 photo = plt.imread('Tuebingen_Neckarfront_small.jpg')
 rawim, photo = prep_image(photo)
 
-# Style extractio image
-art = plt.imread('van_gogh_small.jpg')
-rawim, art = prep_image(art)
+# Style extraction image
+art1 = plt.imread('picasso.jpg')
+art2 = plt.imread('picasso_2.jpg')
+art_avg = avg(art1, art2)
+rawim, art = prep_image(avg_art)
 
 def gram_matrix(x):
     x = x.flatten(ndim=3)
