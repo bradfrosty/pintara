@@ -9,13 +9,20 @@ our EECS 445: Introduction to Machine Learning.
 
 To use the script to make your own awesome artistic photos, you will need to have an NVIDIA GPU with CUDA drivers installed. This code would take hours upon hours when running on the CPU, but we may add this option if necessary.
 
+### Installation
+
+```bash
+git clone https://github.com/bfrost2893/eecs445-project
+pip install -r requirements.txt
+```
+
 Example usage:
 
 ```bash
 python art.py --content content/content.jpg --style style/picasso -k 4
 ```
 
-**Options**
+### Options
 
 * `--content`, `-c`
     - The content image that you wish to apply style to
