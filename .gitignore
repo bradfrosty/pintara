@@ -56,3 +56,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+
+2015*
+sftp-config.json
+iterate.dat
+atr2.py
+art3.py
