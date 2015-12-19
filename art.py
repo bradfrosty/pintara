@@ -123,9 +123,10 @@ styleDirectory = 'style/monet'
 styleImage = ''
 contentImage = 'content/brad.jpg'
 K = 0
+weights = []
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"hs:c:k:",["style=","content="])
+    opts, args = getopt.getopt(sys.argv[1:],"hs:c:k:w:",["style=","content=","weights="])
 except getopt.GetoptError:
     print 'art.py -s <styleImage|styleDirectory> -c <contentImage> -k <number of neighbors>'
     sys.exit(2)
@@ -158,6 +159,9 @@ for opt, arg in opts:
             print 'K value must be a postive integer'
             sys.exit(2)        
         K = arg
+    elif opt in ("-w", "--weights"):
+        weightStr = str(arg)
+        weights = weightStr.split(',')
 
 if styleImage:
     styleImageNames = [styleImage]
@@ -180,6 +184,21 @@ for image in styleImageNames:
     if ".jpg" not in image and ".png" not in image:
         styleImageNames.remove(image)
 
+if len(weights) != K:
+    print "Make sure weights are comma separated with no spaces and have the same number of values as K"
+
+if weights:
+    weightStr = "Using weights "
+    for w in weights:
+        weightStr += str(w)
+        weightStr += ", " 
+    
+    print weightStr
+    filePath = os.path.abspath("/home/guest/EECS445/eecs445-project/%s/info.txt" % time)
+    with open(filePath, "w") as text_file:
+        text_file.write(weightStr)
+
+
 styleImagesList = np.empty([len(styleImageNames), 3* 600*600]) 
 styleImages = {}
 
@@ -188,6 +207,7 @@ styleImgFileNames = {}
 for name in styleImageNames:
     styleImgFileNames[name] = name.split('/')[-1]
 
+print "List of images KNN is choosing from..."
 for imgstr in styleImageNames:
     print imgstr
     artImg = plt.imread(imgstr)
@@ -207,6 +227,13 @@ for imgstr in styleImageNames:
 normDistances.sort(key=lambda tup: tup[0])
 
 nearestStyle = normDistances[0:int(K)]
+
+print "Choosing the following neighbor in order from nearest to furthest up to K..."
+count = 0
+for neighbor in nearestStyle:
+    print str(count) + ": " + neighbor[1]
+    count += 1
+
 nearestStyleImages = []
 map(lambda imageNeighbor: nearestStyleImages.append(prep_image(plt.imread(imageNeighbor[1]))[1]), nearestStyle)
 map(lambda imageNeighbor: plt.imsave(time + '/' + styleImgFileNames[imageNeighbor[1]], plt.imread(imageNeighbor[1])), nearestStyle)
@@ -225,27 +252,32 @@ def content_loss(P, X, layer):
     return loss
 
 
-def style_loss(A, X, layer):
+def style_loss(A, X, layer, weights):
 
     loss = 0
+    count = 0
     for img in A:
         N = img[layer].shape[1]
         M = img[layer].shape[2] * img[layer].shape[3]
 
         S = gram_matrix(img[layer])
         G = gram_matrix(X[layer])
-    
-        loss = loss + 1./(4 * N**2 * M**2) * ((G - S)**2).sum()
+        
+        if not weights:
+            loss = loss + (1./(4 * N**2 * M**2) * ((G - S)**2).sum()) 
+        else: 
+            loss = loss + float(weights[count])* 1./(4 * N**2 * M**2) * ((G - S)**2).sum()
+            count += 1
 
-    return loss/4;
+    return loss;
 
 def style_loss_mean(A, X, layer):
 
     S = []
     for img in A:
-        S.append(gram_matrix(img[layer]));
+        S.append(gram_matrix(img[layer]))
 
-    S = sum(S)/len(S);
+    S = sum(S)/len(S)
     
     G = gram_matrix(X[layer])
     
@@ -272,18 +304,17 @@ art_features = []
 for i in range(0,int(K)):
     art_features.append({k: theano.shared(output.eval({input_im_theano: nearestStyleImages[i]}))
                      for k, output in zip(layers.keys(), outputs)});
-
-# ADDED
 # Get expressions for layer activations for generated image
+
+# Content on white noise
+# ADDED
 newimg = np.copy(contentImg).reshape(1, 3, IMAGE_W, IMAGE_W)
 generated_image = theano.shared(floatX(newimg))
-
-# white noise
-#generated_image.set_value(floatX(np.copy((10 * newimg.std() * np.random.random(newimg.shape)))));
-
-#
 generated_image.set_value(floatX(np.copy(newimg + (2 * newimg.std() * np.random.random(newimg.shape)))));
 
+# White noise (original)
+#generated_image.set_value(floatX(np.copy((10 * newimg.std() * np.random.random(newimg.shape)))));
+# generated_image = theano.shared(floatX(np.random.uniform(-128, 128, (1, 3, IMAGE_W, IMAGE_W))))
 
 
 gen_features = lasagne.layers.get_output(layers.values(), generated_image)
@@ -296,11 +327,11 @@ losses = []
 losses.append(.05 * content_loss(photo_features, gen_features, 'conv4_2'))
 
 # style loss
-losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv2_1'))
-losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv3_1'))
-losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv1_1'))
-losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv4_1'))
-losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv5_1'))
+losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv2_1', weights))
+losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv3_1', weights))
+losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv1_1', weights))
+losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv4_1', weights))
+losses.append(0.2e8 * style_loss(art_features, gen_features, 'conv5_1', weights))
 
 # total variation penalty
 losses.append(0.1e-4 * total_variation_loss(generated_image))
@@ -325,7 +356,7 @@ def eval_grad(x0):
     return np.array(f_grad()).flatten().astype('float64')
 
 # Initialize with a noise image
-#generated_image.set_value(floatX(np.random.uniform(-128, 128, (1, 3, IMAGE_W, IMAGE_W))))
+# generated_image.set_value(floatX(np.random.uniform(-128, 128, (1, 3, IMAGE_W, IMAGE_W))))
 
 x0 = generated_image.get_value().astype('float64')
 
