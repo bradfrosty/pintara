@@ -36,3 +36,7 @@ to the content image you specify
     - The number of style images you wish to apply
     - This will choose the best four style images according to the
     Euclidean distance between the content and the style images (a simple [k-Nearest Neighbors](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm) implementation that we used for preprocessing)
+* `--weights`, `-w`
+    - Add custom weights to each neighbor image using a comma separated string
+    - Example: `-w .6,.4`
+    - The weights must sum to one and must equal the K value
