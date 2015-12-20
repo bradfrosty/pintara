@@ -187,6 +187,10 @@ for image in styleImageNames:
 if len(weights) != K:
     print "Make sure weights are comma separated with no spaces and have the same number of values as K"
 
+weights = [float(i) for i in weights]
+if sum(weights) != 1:
+    print "Make sure weights sum to 1"
+
 if weights:
     weightStr = "Using weights "
     for w in weights:
