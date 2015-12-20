@@ -128,7 +128,7 @@ weights = []
 try:
     opts, args = getopt.getopt(sys.argv[1:],"hs:c:k:w:",["style=","content=","weights="])
 except getopt.GetoptError:
-    print 'art.py -s <styleImage|styleDirectory> -c <contentImage> -k <number of neighbors>'
+    print 'art.py -s <styleImage|styleDirectory> -c <contentImage> -k <number of neighbors> -w <weights>'
     sys.exit(2)
 for opt, arg in opts:
     if opt == '-h':
@@ -370,18 +370,4 @@ for i in range(50):
     scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, maxfun=40)
     x0 = generated_image.get_value().astype('float64')
     plt.imsave(time + '/' + str(i) + '.png',deprocess(x0))
-
-# plt.figure(figsize=(12,12))
-# for i in range(9):
-#     plt.subplot(3, 3, i+1)
-#     plt.gca().xaxis.set_visible(False)    
-#     plt.gca().yaxis.set_visible(False)    
-#     plt.imshow(deprocess(xs[i]))
-# plt.tight_layout()
-# plt.show()
-
-# plt.figure(figsize=(12,12))
-# plt.imshow(deprocess(xs[-1]), interpolation='nearest')
-# plt.show()
-
 
