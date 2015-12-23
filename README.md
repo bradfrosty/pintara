@@ -15,11 +15,28 @@ To use the script to make your own awesome artistic photos, you will need to hav
 git clone https://github.com/bfrost2893/eecs445-project
 pip install -r requirements.txt
 ```
+Make sure that your machine has the CUDA drivers installed. If your machine is
+configured to work with Theano GPU support, it will work as expected. See [this
+documentation article](http://deeplearning.net/software/theano/tutorial/using_gpu.html)
+for support on configuring Theano to work with NVIDIA GPUs.
 
-Example usage:
+### Usage
+This script should work for most major Linux distributions. We implemented using
+it Ubuntu 14.04 LTS (Trusty). However, it should work for any distribution.
+
+Generate an image using `content/content.jpg` image and `style/picasso` paintings with
+K = 4 nearest neighbors and weights 0.4, 0.3, 0.2, and 0.1 weights on the applied
+style images.
 
 ```bash
-python art.py --content content/content.jpg --style style/picasso -k 4
+python art.py --content content/content.jpg --style style/picasso -k 4 -w 0.4,0.3,0.2,0.1
+```
+
+Generate an image using `content/content.jpg` image and `style/picasso.jpg`, which
+only applies one style image to the content with no other options.
+
+```bash
+python art.py --content content/content.jpg --style style/picasso.jpg
 ```
 
 ### Options
