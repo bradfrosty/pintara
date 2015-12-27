@@ -365,7 +365,7 @@ def eval_grad(x0):
 x0 = generated_image.get_value().astype('float64')
 
 # Optimize, saving the result periodically
-for i in range(50):
+for i in range(10):
     print(i)
     scipy.optimize.fmin_l_bfgs_b(eval_loss, x0.flatten(), fprime=eval_grad, maxfun=40)
     x0 = generated_image.get_value().astype('float64')
