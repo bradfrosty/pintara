@@ -67,3 +67,10 @@ art_test*
 content*
 style*
 vgg*
+
+#backend
+backend/local
+backend/bin
+backend/include
+backend/pip-selfcheck.json
+backend/louvre-yourself.yml
